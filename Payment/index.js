@@ -47,23 +47,24 @@ const Payment = mongoose.model("Payment",paymentSchema)
 
 
 
-app.post("/checkout",(req,res)=>{
+app.post("/checkout",async (req,res)=>{
 
     const options = {
-        amount:Number(req.body.amount*100),
+        amount:Number(req.body.cost*100),
         currency:"INR",
     };
-    const order = instance.orders.create(options);
+    const order = await instance.orders.create(options);
     console.log(order);
     res.status(200).json({
-        success:true,order
-    })
+        success:true,
+        order:order
+    });
 })
 
 app.post("/payment-verify",(req,res)=>{
     const {razorpay_order_id,razorpay_payment_id,razorpay_signature} = req.body;
     const body = razorpay_order_id + "|" +razorpay_payment_id;
-    const expectedsignature = crypto.createHmac('pri009',process.env.secret).update(body.toString()).digest('hex');
+    const expectedsignature = crypto.createHmac('sha256',process.env.secret).update(body.toString()).digest('hex');
     const isauth = expectedsignature === razorpay_signature;
     if(isauth){
         Payment.create({
