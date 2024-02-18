@@ -127,7 +127,7 @@ app.get("/order",(req,resp)=>{
 
 app.delete("/deleteOrder/:id",(req,resp)=>{
     let oid = +req.params.id;
-    db.collection("orders").deleteOne({orderId : oid},(ere,reslt)=>{
+    db.collection("orders").deleteOne({id : oid},(ere,reslt)=>{
         if(ere) throw ere;
         resp.send("deleted sccesfl");
     })
