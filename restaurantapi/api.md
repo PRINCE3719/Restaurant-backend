@@ -4,7 +4,7 @@ http://localhost:4000/locations
 
 quick search api
 
-http://localhost:4000/mealtype
+ 
 
 restaurant with city api
 

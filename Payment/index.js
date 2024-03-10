@@ -42,7 +42,7 @@ const paymentSchema = new mongoose.Schema({
 })
 
 
-const Payment = mongoose.model("Payment",paymentSchema)
+const payments = mongoose.model("Payment",paymentSchema)
 
 
 
@@ -61,20 +61,27 @@ app.post("/checkout",async (req,res)=>{
     });
 })
 
-app.post("/payment-verify",(req,res)=>{
-    const {razorpay_order_id,razorpay_payment_id,razorpay_signature} = req.body;
-    const body = razorpay_order_id + "|" +razorpay_payment_id;
-    const expectedsignature = crypto.createHmac('sha256',process.env.secret).update(body.toString()).digest('hex');
-    const isauth = expectedsignature === razorpay_signature;
-    if(isauth){
-        Payment.create({
-            razorpay_order_id,razorpay_payment_id,razorpay_signature
-        });
-        res.redirect(`http://localhost:3000/success?reference=${razorpay_payment_id}`)
+app.post("/payment-verify",async (req,res)=>{
+    try {
+        const {razorpay_order_id,razorpay_payment_id,razorpay_signature} = req.body;
+        const body = razorpay_order_id + "|" +razorpay_payment_id;
+        const expectedsignature = crypto.createHmac('sha256',process.env.secret).update(body.toString()).digest('hex');
+        const isauth = expectedsignature === razorpay_signature;
+        if(isauth){
+           await payments.create({
+                razorpay_order_id,razorpay_payment_id,razorpay_signature
+            });
+            res.redirect(`http://localhost:3000/success?reference=${razorpay_payment_id}`)
+        }
+        else{
+            res.status(400).json({success:false}); 
+        }
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({success:false,error:"internal error"})
+        
     }
-    else{
-        res.status(400).json({success:false}); 
-    }
+  
 
 })
 
